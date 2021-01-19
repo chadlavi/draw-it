@@ -24,6 +24,21 @@ export function useClickAway(callback) {
   }, []);
 
   useEffect(() => {
+    document.addEventListener("touchstart", handleTouchStart);
+    return () => document.removeEventListener("touchstart", handleTouchStart);
+
+    function handleTouchStart(e) {
+      if (
+        innerRef.current &&
+        callbackRef.current &&
+        !innerRef.current.contains(e.target)
+      ) {
+        callbackRef.current(e);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     document.addEventListener("click", handleClick);
     return () => document.removeEventListener("click", handleClick);
 

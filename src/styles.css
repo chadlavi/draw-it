@@ -2,14 +2,30 @@
   background: #ffe;
   font-size: 16px;
   font-family: monospace;
+  --DEFAULT_WIDTH: 600px;
 }
 
-.App {
+body {
+  margin: 0;
+}
+
+main#app {
   margin: 2em auto;
-  width: min-content;
+  width: var(--DEFAULT_WIDTH);
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+@media only screen and (max-width: 600px) {
+  main#app {
+    margin: 0 auto;
+  }
+  div.canvas {
+    margin: 0px;
+    box-shadow: none;
+  }
 }
 
 .picker-container {
@@ -42,7 +58,7 @@
   margin: 1px;
 }
 
-.canvas:not(.disabled) {
+.canvas {
   border: 1px solid #ddd;
   cursor: none;
   box-shadow: 4px 4px #995;
@@ -97,29 +113,93 @@ button {
   border-top-width: 2px;
 }
 
-button.palette:hover {
-  background: #008b02;
-  color: white;
-}
+@media (hover: hover) {
+  button.palette:hover {
+    background: #008b02;
+    color: white;
+  }
 
-button.undo:hover {
-  background: #fccb00;
-}
+  button.undo:hover {
+    background: #fccb00;
+  }
 
-button.clear:hover {
-  background: #b80000;
-  color: white;
+  button.clear:hover {
+    background: #b80000;
+    color: white;
+  }
+  
+  button.clear:hover .non-hover {
+    display: none;
+  }
+  button.clear:hover .hover {
+    display: inline;
+  }
 }
 
 button.clear .hover {
   display: none;
 }
 
-button.clear:hover .non-hover {
-  display: none;
+/* touch screens */
+@media (hover: none) {
+  div.canvas > canvas:nth-child(1) {
+    opacity: 0;
+  }
+  button.palette:active {
+    background: #008b02;
+    color: white;
+  }
+
+  button.undo:active {
+    background: #fccb00;
+  }
+
+  button.clear:active {
+    background: #b80000;
+    color: white;
+  }
+  
+  button.clear:active .non-hover {
+    display: none;
+  }
+  button.clear:active .hover {
+    display: inline;
+  }
 }
-button.clear:hover .hover {
-  display: inline;
+
+.prompt {
+  margin: 1em;
+  text-align: center;
+}
+
+#rotate-me {
+  display: none;
+  background: black;
+  color: white;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  z-index: 1000;
+}
+
+#rotate-me .dismissRWButton {
+  margin-top: 2em;
+}
+
+@media only screen
+and (min-device-width: 375px)
+and (max-device-width: 812px)
+and (-webkit-min-device-pixel-ratio: 3)
+and (orientation: landscape) {
+  #rotate-me {
+    display: flex;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
 }
 
 /* debugging */
@@ -135,4 +215,8 @@ textarea {
   border: 1px solid #995;
   color: white;
   font-size: inherit;
+}
+
+img {
+  background: white;
 }

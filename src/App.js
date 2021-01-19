@@ -5,6 +5,12 @@ import "./styles.css";
 import { useClickAway } from "./useClickAway";
 
 import classNames from "classnames";
+import { useWindowSize } from "./useWidth";
+import { randomPhrase } from "./randomPhrase";
+import { download } from "./download";
+import { addBackgroundToCanvas } from "./addBackgroundToCanvas";
+
+const DEFAULT_SIZE = 600;
 
 const defaultProps = {
   loadTimeOffset: 5,
@@ -13,8 +19,8 @@ const defaultProps = {
   catenaryColor: "#0a0302",
   gridColor: "rgba(150,150,150,0.17)",
   hideGrid: true,
-  canvasWidth: 400,
-  canvasHeight: 400,
+  canvasWidth: DEFAULT_SIZE,
+  canvasHeight: DEFAULT_SIZE,
   disabled: false,
   imgSrc: "",
   saveData: "",
@@ -43,16 +49,22 @@ const colors = [
   "#CCCCCC",
 ];
 
-const width = `${Math.ceil(colors.length / 2) * 32}px`;
+const paletteWidth = `${Math.ceil(colors.length / 2) * 32}px`;
+
+const getImg = (ref) =>
+  addBackgroundToCanvas(ref.current.canvasContainer.children[1], "#FFFFFF");
+
+const prompt = randomPhrase();
 
 export default function App() {
+  const initRW = Boolean(localStorage.getItem("rotation_warning") !== "false");
   const canvasRef = React.createRef(null);
   const [brushColor, setBrushColor] = React.useState("#000000");
   const [showColor, setShowColor] = React.useState(false);
   const [saveData, setSaveData] = React.useState("");
+  const [rw, setRW] = React.useState(initRW);
 
-  const getImg = () =>
-    canvasRef.current.canvasContainer.children[1].toDataURL();
+  const { width } = useWindowSize();
 
   const paletteRef = useClickAway(() => {
     setShowColor(false);
@@ -64,12 +76,25 @@ export default function App() {
   };
 
   const handleCanvasChange = () => {
-    const saveData = getImg();
+    const saveData = getImg(canvasRef);
     setSaveData(saveData);
   };
 
+  const handleDismissRW = () => {
+    localStorage.setItem("rotation_warning", "false");
+    setRW(false);
+  };
+
+  const handleDownload = () => {
+    download(saveData, `${new Date().toISOString()}.png`);
+  };
+
+  const forwardWidth = Math.min(DEFAULT_SIZE, width);
+
   const props = {
     ...defaultProps,
+    canvasWidth: forwardWidth,
+    canvasHeight: forwardWidth,
     className: classNames("canvas"),
     onChange: handleCanvasChange,
     ref: canvasRef,
@@ -78,7 +103,28 @@ export default function App() {
   };
 
   return (
-    <div className="App">
+    <main id="app">
+      {rw && (
+        <div id="rotate-me">
+          <div>
+            <span role="img" aria-label="">
+              ⚠️
+            </span>{" "}
+            This works best in portrait mode on this device!
+          </div>
+          <div className="dismissRWButton">
+            <button onClick={handleDismissRW}>
+              let me play this way anyway
+            </button>
+          </div>
+        </div>
+      )}
+      <div className="prompt">
+        draw this:
+        <div>
+          <b>&quot;{prompt}&quot;</b>
+        </div>
+      </div>
       <CanvasDraw {...props} />
       <div className="button-container">
         <div ref={paletteRef} className="picker-container">
@@ -91,7 +137,7 @@ export default function App() {
             <span role="img" aria-label="">
               🎨
             </span>{" "}
-            color
+            color&#8230;
           </button>
           {showColor && (
             <div className="picker-popper">
@@ -99,7 +145,7 @@ export default function App() {
                 triangle={"hide"}
                 color={brushColor}
                 colors={colors}
-                width={width}
+                width={paletteWidth}
                 onChangeComplete={(c) => setBrushColor(c.hex)}
               />
             </div>
@@ -125,19 +171,27 @@ export default function App() {
           </span>{" "}
           clear
         </button>
-        {/* <button className="save" onClick={handleSave}>
-          <span role="img" aria-label="">
-            💾
-          </span>{" "}
-          save
-        </button> */}
+        {saveData && (
+          <button className="save" onClick={handleDownload}>
+            <span role="img" aria-label="">
+              📲
+            </span>{" "}
+            download
+          </button>
+        )}
       </div>
       {saveData && (
         <>
+          <p>
+            <br />
+            ##########################
+            <br /># ~*~ DEBUGGING INFO ~*~ #<br />
+            ##########################
+          </p>
           <img src={saveData} alt="" />
           <textarea rows={10} value={saveData} readOnly />
         </>
       )}
-    </div>
+    </main>
   );
 }
